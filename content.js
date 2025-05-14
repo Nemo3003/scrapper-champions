@@ -14,29 +14,33 @@ function obtenerReconocimientos() {
   return reconocimientos;
 }
 
-function exportarCSV(data) {
-  const encabezados = ['Fecha', 'Autor', 'Categoría', 'Mensaje'];
-  const filas = data.map(row => [
-    `"${row.fecha}"`,
-    `"${row.autor}"`,
-    `"${row.categoria}"`,
-    `"${row.mensaje.replace(/"/g, '""')}"`
-  ]);
+async function enviarASlack(data) {
+  const webhookURL = 'https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXXX'; // Reemplaza con tu webhook de Slack
 
-  const csvContent = [encabezados, ...filas].map(e => e.join(',')).join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  // Formatear los datos como un mensaje de Slack
+  const mensaje = data.map(row => 
+    `*Fecha:* ${row.fecha}\n*Autor:* ${row.autor}\n*Categoría:* ${row.categoria}\n*Mensaje:* ${row.mensaje}`
+  ).join('\n\n');
 
-  const now = new Date();
-  const timestamp = now.toISOString().replace(/[:.]/g, '-');
+  const payload = {
+    text: `Reconocimientos:\n\n${mensaje}`
+  };
 
-  const fileName = `reconocimientos_${timestamp}.csv`;
+  try {
+    const response = await fetch(webhookURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    if (response.ok) {
+      console.log('Datos enviados a Slack correctamente.');
+    } else {
+      console.error('Error al enviar datos a Slack:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error al enviar datos a Slack:', error);
+  }
 }
 
 // Listener para mensajes desde el popup o background
@@ -44,8 +48,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'exportCSV') {
     const datos = obtenerReconocimientos();
     if (datos.length > 0) {
-      exportarCSV(datos);
-      sendResponse({ success: true, message: 'CSV exportado correctamente.' });
+      enviarASlack(datos);
+      sendResponse({ success: true, message: 'Datos enviados a Slack correctamente.' });
     } else {
       sendResponse({ success: false, message: 'No se encontraron reconocimientos.' });
     }
