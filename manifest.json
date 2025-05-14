@@ -12,6 +12,9 @@
       "js": ["content.js"]
     }
   ],
+  "host_permissions": [
+    "https://hooks.slack.com/*"
+  ],
   "action": {
     "default_popup": "popup.html"
   }
