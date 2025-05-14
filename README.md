@@ -26,7 +26,6 @@ Luego, descomprime el archivo si descargaste el ZIP.
     Selecciona la carpeta del repositorio que clonaste o descomprimiste.
 
 ¡Listo! La extensión debería aparecer activa en tu navegador.
-🛠 Estructura del proyecto
 
 
 📌 Notas adicionales
